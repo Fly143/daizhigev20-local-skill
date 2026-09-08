@@ -523,6 +523,26 @@ def cmd_grep(args):
 
 # ---------------------------------------------------------------- main
 
+def _check_data():
+    """数据目录缺失或为空时给出明确提示，避免静默返回空结果"""
+    if not os.path.isdir(ROOT):
+        print(f"❌ 数据目录不存在: {ROOT}\n"
+              f"   请先下载数据（约 5.2 GB）：\n"
+              f"     git clone -b data --depth 1 "
+              f"https://github.com/daizhige-org/daizhigev20.git\n"
+              f"   或用环境变量指定已有数据：export DZG_DATA=/path/to/daizhigev20")
+        return False
+    try:
+        if not any(fn.endswith(".md") for fn in os.listdir(ROOT)):
+            print(f"❌ 数据目录为空: {ROOT}\n"
+                  f"   请确认已克隆 daizhige-org/daizhigev20 的 data 分支")
+            return False
+    except OSError as e:
+        print(f"❌ 无法读取数据目录: {ROOT}  ({e})")
+        return False
+    return True
+
+
 def main():
     if len(sys.argv) < 2:
         print(__doc__); return
@@ -534,6 +554,8 @@ def main():
     if fn is None:
         print(__doc__)
         return
+    if not _check_data():
+        sys.exit(2)
     try:
         fn(args)
     except BrokenPipeError:

@@ -8,10 +8,12 @@ KB = os.path.dirname(os.path.abspath(__file__))
 
 
 def _find_data():
-    """定位古籍数据目录。优先环境变量 DZG_DATA，其次常见位置。"""
+    """定位古籍数据目录。
+    环境变量 DZG_DATA 一旦设置就**直接采用**（不存在也报错，不静默回退），
+    未设置时才按常见位置探测。"""
     env = os.environ.get("DZG_DATA")
-    if env and os.path.isdir(env):
-        return env
+    if env:
+        return env                      # 显式指定：即使不存在也如实返回
     parent = os.path.dirname(KB)
     for cand in (
         os.path.join(parent, "daizhigev20"),      # 与工具同级
