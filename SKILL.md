@@ -61,9 +61,19 @@ python3 /skills/殆知阁离线检索/scripts/selftest.py
 
 ## 数据位置
 
+本工具**不含古籍正文**，需先有数据（5.2 GB）。
+
 查找顺序：`$DZG_DATA` → `/skills/殆知阁离线检索/daizhigev20` → `/workspace/daizhigev20` → `~/daizhigev20`
 
 当前使用：`/workspace/daizhigev20`
+
+**数据不存在时**，告知用户需先下载，不要反复重试：
+
+```sh
+git clone -b data --depth 1 https://github.com/daizhige-org/daizhigev20.git
+```
+
+下载后重建索引：`python3 /skills/殆知阁离线检索/scripts/build_index.py`（22 秒）
 
 ## 重建索引（数据更新后）
 

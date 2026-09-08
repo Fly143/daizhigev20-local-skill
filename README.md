@@ -7,6 +7,40 @@
 
 ---
 
+## 〇、先获取数据（必须）
+
+本工具**不含古籍正文**，需先下载数据（约 5.2 GB）。
+
+```sh
+# 下载到工具同级目录（推荐）
+cd /skills/殆知阁离线检索
+git clone -b data --depth 1 https://github.com/daizhige-org/daizhigev20.git
+```
+
+数据来源：[daizhige-org/daizhigev20](https://github.com/daizhige-org/daizhigev20)
+（原始作者 [garychowcmu](https://github.com/garychowcmu/daizhigev20)）。
+
+**数据目录查找顺序**（自动探测，找到即用）：
+
+1. 环境变量 `$DZG_DATA`
+2. `/skills/殆知阁离线检索/daizhigev20` ← 推荐位置
+3. `/workspace/daizhigev20` ← 当前环境使用
+4. `~/daizhigev20`
+
+也可以放到任意位置并用环境变量指定：
+
+```sh
+export DZG_DATA=/path/to/daizhigev20
+```
+
+下载后确认索引可用：
+
+```sh
+python3 /skills/殆知阁离线检索/scripts/selftest.py
+```
+
+若数据更新过，重建索引：`python3 scripts/build_index.py`（22 秒）。
+
 ## 一、适用场景
 
 - 需要**繁简/异体字通搜**（1053 组变体）
@@ -101,12 +135,3 @@ python3 /skills/殆知阁离线检索/scripts/selftest.py
 | 变体表非完整繁简表 | 1053 组来自书名用字，正文生僻异体可能漏 |
 | `--loan` 仅老子类成立 | 47 组借字，其他典籍会误伤 |
 | 全库 3.3 秒 | 5.2 GB 顺序读的物理下限 |
-
-## 八、数据来源
-
-本地数据来自 [daizhige-org/daizhigev20](https://github.com/daizhige-org/daizhigev20)
-（原始作者 [garychowcmu](https://github.com/garychowcmu/daizhigev20)）。
-
-```sh
-git clone -b data --depth 1 https://github.com/daizhige-org/daizhigev20.git
-```
