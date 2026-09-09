@@ -1,1 +1,14 @@
+#!/bin/sh
+# gj —— 殆知阁古籍库检索（wrapper）
+# 解析符号链接后定位同目录的 gj.py，移动目录或软链到 PATH 均可用
+SELF=$0
+while [ -L "$SELF" ]; do
+    LINK=$(readlink "$SELF")
+    case "$LINK" in
+        /*) SELF=$LINK ;;
+        *)  SELF=$(dirname "$SELF")/$LINK ;;
+    esac
+done
+HERE=$(cd "$(dirname "$SELF")" && pwd)
+exec python3 "$HERE/gj.py" "$@"
 
