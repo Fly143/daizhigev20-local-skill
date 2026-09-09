@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """gj 工具共享库：frontmatter 解析、索引加载、变体正则"""
-import os, re, json
+import os, re, sys, json
 
 # 工具自身所在目录（不再硬编码，便于移动与分发）
 KB = os.path.dirname(os.path.abspath(__file__))
@@ -28,6 +28,13 @@ def _find_data():
 
 ROOT = _find_data()
 IDX  = os.path.join(KB, "index.tsv")
+
+
+class IndexMissing(RuntimeError):
+    """索引文件缺失（需先跑 build_index.py）"""
+    def __init__(self, path):
+        super().__init__(path)
+        self.path = path
 
 # ---------------------------------------------------------------- frontmatter
 
@@ -131,10 +138,13 @@ def links_from_str(s):
 # ---------------------------------------------------------------- 索引
 
 def load_index():
-    """-> [(path, title, category, author, size, links_str)]"""
+    """-> [(path, title, category, author, size, links_str)]
+
+    索引缺失时抛 IndexMissing，由 gj.py 统一给出提示并退出码 2。
+    """
     rows = []
     if not os.path.exists(IDX):
-        return rows
+        raise IndexMissing(IDX)
     with open(IDX, encoding="utf-8") as f:
         for line in f:
             p = line.rstrip("\n").split("\t")
@@ -287,15 +297,26 @@ VARIANTS_FILE = os.path.join(KB, "variants.txt")
 
 def _load_variants():
     """优先读 variants.txt（由 build_variants.py 自动生成），否则回退手工表。
-    格式：每行一组，组内字以空格分隔（列数固定，GitHub 不会报表格错误）。"""
+    格式：每行一组，组内字以空格分隔（列数固定，GitHub 不会报表格错误）。
+
+    回退时在 stderr 给出警告：内置手工表只有 179 组，繁简异体召回会明显下降。"""
     groups = []
     if os.path.exists(VARIANTS_FILE):
-        with open(VARIANTS_FILE, encoding="utf-8") as f:
-            for line in f:
-                g = [c for c in line.strip().split() if c]
-                if len(g) > 1:
-                    groups.append(g)
+        try:
+            with open(VARIANTS_FILE, encoding="utf-8") as f:
+                for line in f:
+                    g = [c for c in line.strip().split() if c]
+                    if len(g) > 1:
+                        groups.append(g)
+        except OSError as e:
+            print(f"⚠️  无法读取变体表 {VARIANTS_FILE}（{e}），改用内置表",
+                  file=sys.stderr)
     if not groups:
+        print(f"⚠️  变体表缺失: {VARIANTS_FILE}\n"
+              f"   已回退内置手工表（{len(VARIANT_GROUPS)} 组），"
+              f"繁简异体召回会下降。\n"
+              f"   修复：python3 {os.path.join(KB, 'build_variants.py')}",
+              file=sys.stderr)
         groups = [list(g) for g in VARIANT_GROUPS]
     return groups
 

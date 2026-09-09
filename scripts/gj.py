@@ -28,10 +28,20 @@ grep 选项:
 import os, re, sys, json, shlex, subprocess
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from lib import (ROOT, KB, load_index, variant_regex, loan_forms,
-                 expand_alias)
+from lib import (ROOT, KB, IDX, load_index, variant_regex, loan_forms,
+                 expand_alias, IndexMissing)
 
 JOBS = 8
+
+
+# ---------------------------------------------------------------- 索引检查
+
+def _index_hint(e):
+    print(f"❌ 索引文件缺失: {e.path}\n"
+          f"   请先确认数据目录就位，再重建索引：\n"
+          f"     python3 {os.path.join(KB, 'build_index.py')}\n"
+          f"   数据目录: {ROOT}", file=sys.stderr)
+    return False
 
 
 # ---------------------------------------------------------------- 工具
@@ -558,6 +568,9 @@ def main():
         sys.exit(2)
     try:
         fn(args)
+    except IndexMissing as e:
+        _index_hint(e)
+        sys.exit(2)
     except BrokenPipeError:
         try: sys.stdout.close()
         except Exception: pass
